@@ -21,25 +21,25 @@ func (r *Rule) MakeRule() option.DefaultRule {
 	rule.PortRange = append(rule.PortRange, r.PortRanges...)
 
 	switch r.Network {
-	case Network_TCP:
+	case Network_tcp:
 		rule.Network = []string{"tcp"}
-	case Network_UDP:
+	case Network_udp:
 		rule.Network = []string{"udp"}
 	}
 
 	for _, p := range r.Protocols {
 		switch p {
-		case Protocol_TLS:
+		case Protocol_tls:
 			rule.Protocol = append(rule.Protocol, "tls")
-		case Protocol_HTTP:
+		case Protocol_http:
 			rule.Protocol = append(rule.Protocol, "http")
-		case Protocol_QUIC:
+		case Protocol_quic:
 			rule.Protocol = append(rule.Protocol, "quic")
-		case Protocol_STUN:
+		case Protocol_stun:
 			rule.Protocol = append(rule.Protocol, "stun")
-		case Protocol_DNS:
+		case Protocol_dns:
 			rule.Protocol = append(rule.Protocol, "dns")
-		case Protocol_Bittorrent:
+		case Protocol_bittorrent:
 			rule.Protocol = append(rule.Protocol, "bittorrent")
 		}
 	}

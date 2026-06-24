@@ -685,7 +685,7 @@ func setRoutingOptions(options *option.Options, hopt *HiddifyOptions) error {
 		)
 	}
 
-	for _, rule := range opt.Rules {
+	for _, rule := range hopt.Rules {
 		routeRule := rule.MakeRule()
 		switch rule.Outbound {
 		case Outbound_direct:
