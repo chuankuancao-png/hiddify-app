@@ -687,15 +687,16 @@ func setRoutingOptions(options *option.Options, hopt *HiddifyOptions) error {
 
 	for _, rule := range hopt.Rules {
 		routeRule := rule.MakeRule()
+		var outbound string
 		switch rule.Outbound {
 		case Outbound_direct:
-			routeRule.Outbound = OutboundDirectTag
+			outbound = OutboundDirectTag
 		case Outbound_direct_with_fragment:
-			routeRule.Outbound = OutboundDirectFragmentTag
+			outbound = OutboundDirectFragmentTag
 		case Outbound_block:
-			routeRule.Outbound = "block"
+			outbound = "block"
 		case Outbound_proxy:
-			routeRule.Outbound = OutboundSelectTag
+			outbound = OutboundSelectTag
 		}
 
 		if len(routeRule.DomainSuffix) > 0 || len(routeRule.Domain) > 0 ||
@@ -703,6 +704,12 @@ func setRoutingOptions(options *option.Options, hopt *HiddifyOptions) error {
 			len(routeRule.PortRange) > 0 || len(routeRule.Protocol) > 0 ||
 			len(routeRule.ProcessName) > 0 || len(routeRule.ProcessPath) > 0 ||
 			len(routeRule.Network) > 0 {
+			routeRule.RuleAction = option.RuleAction{
+				Action: C.RuleActionTypeRoute,
+				RouteOptions: option.RouteActionOptions{
+					Outbound: outbound,
+				},
+			}
 			routeRules = append(routeRules, option.Rule{
 				Type:           C.RuleTypeDefault,
 				DefaultOptions: routeRule,
