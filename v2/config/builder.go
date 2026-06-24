@@ -685,45 +685,30 @@ func setRoutingOptions(options *option.Options, hopt *HiddifyOptions) error {
 		)
 	}
 
-	// for _, rule := range opt.Rules {
-	// 	routeRule := rule.MakeRule()
-	// 	switch rule.Outbound {
-	// 	case "bypass":
-	// 		routeRule.Outbound = OutboundBypassTag
-	// 	case "block":
-	// 		routeRule.Outbound = OutboundBlockTag
-	// 	case "proxy":
-	// 		routeRule.Outbound = OutboundMainProxyTag
-	// 	}
+	for _, rule := range opt.Rules {
+		routeRule := rule.MakeRule()
+		switch rule.Outbound {
+		case Outbound_direct:
+			routeRule.Outbound = OutboundDirectTag
+		case Outbound_direct_with_fragment:
+			routeRule.Outbound = OutboundDirectFragmentTag
+		case Outbound_block:
+			routeRule.Outbound = "block"
+		case Outbound_proxy:
+			routeRule.Outbound = OutboundSelectTag
+		}
 
-	// 	if routeRule.IsValid() {
-	// 		routeRules = append(
-	// 			routeRules,
-	// 			option.Rule{
-	// 				Type:           C.RuleTypeDefault,
-	// 				DefaultOptions: routeRule,
-	// 			},
-	// 		)
-	// 	}
-
-	// 	dnsRule := rule.MakeDNSRule()
-	// 	switch rule.Outbound {
-	// 	case "bypass":
-	// 		dnsRule.Server = DNSDirectTag
-	// 	case "block":
-	// 		dnsRule.Server = DNSBlockTag
-	// 		dnsRule.DisableCache = true
-	// 	case "proxy":
-	// 		if opt.EnableFakeDNS {
-	// 			fakeDnsRule := dnsRule
-	// 			fakeDnsRule.Server = DNSFakeTag
-	// 			fakeDnsRule.Inbound = []string{InboundTUNTag, InboundMixedTag}
-	// 			dnsRules = append(dnsRules, fakeDnsRule)
-	// 		}
-	// 		dnsRule.Server = DNSRemoteTag
-	// 	}
-	// 	dnsRules = append(dnsRules, dnsRule)
-	// }
+		if len(routeRule.DomainSuffix) > 0 || len(routeRule.Domain) > 0 ||
+			len(routeRule.IPCIDR) > 0 || len(routeRule.GeoIP) > 0 ||
+			len(routeRule.PortRange) > 0 || len(routeRule.Protocol) > 0 ||
+			len(routeRule.ProcessName) > 0 || len(routeRule.ProcessPath) > 0 ||
+			len(routeRule.Network) > 0 {
+			routeRules = append(routeRules, option.Rule{
+				Type:           C.RuleTypeDefault,
+				DefaultOptions: routeRule,
+			})
+		}
+	}
 	forceDirectRoute := make([]string, 0)
 	if options.NTP != nil && options.NTP.Enabled {
 		forceDirectRoute = append(forceDirectRoute, options.NTP.Server)
