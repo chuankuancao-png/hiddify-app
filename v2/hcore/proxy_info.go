@@ -185,11 +185,30 @@ func (h *HiddifyInstance) AllProxiesInfoStream(stream grpc.ServerStreamingServer
 		stream.Send(h.GetAllProxiesInfo(monitor.OutboundsHistory(""), onlyMain))
 
 		urltestch, err := monitor.SubscribeGroup("")
+		needsURLTestResubscribe := false
 		if err != nil {
-			Log(LogLevel_ERROR, LogType_CORE, "failed to send outbounds info: ", err)
-			// return err
+			Log(LogLevel_ERROR, LogType_CORE, "failed to subscribe url-test updates: ", err)
+			urltestch = nil
+			needsURLTestResubscribe = true
 		}
-		defer monitor.UnsubscribeGroup("", urltestch)
+		unsubscribeURLTest := func() {
+			if urltestch != nil {
+				monitor.UnsubscribeGroup("", urltestch)
+				urltestch = nil
+			}
+		}
+		defer unsubscribeURLTest()
+		resubscribeURLTest := func() {
+			unsubscribeURLTest()
+			urltestch, err = monitor.SubscribeGroup("")
+			if err != nil {
+				Log(LogLevel_ERROR, LogType_CORE, "failed to resubscribe url-test updates: ", err)
+				urltestch = nil
+				needsURLTestResubscribe = true
+				return
+			}
+			needsURLTestResubscribe = false
+		}
 
 		// timer2 := time.NewTicker(10 * time.Second)
 		// defer timer2.Stop()
@@ -215,9 +234,15 @@ func (h *HiddifyInstance) AllProxiesInfoStream(stream grpc.ServerStreamingServer
 				if err := stream.Send(h.GetAllProxiesInfo(monitor.OutboundsHistory(""), onlyMain)); err != nil {
 					Log(LogLevel_ERROR, LogType_CORE, "failed to send outbounds info: ", err)
 				}
+				if needsURLTestResubscribe {
+					resubscribeURLTest()
+				}
 			case _, ok := <-urltestch:
 				if !ok {
-					return nil
+					Log(LogLevel_WARNING, LogType_CORE, "url-test subscription closed; keeping outbounds info stream alive")
+					needsURLTestResubscribe = true
+					urltestch = nil
+					continue
 				}
 				if timer == nil {
 					timer = time.NewTimer(debounceWindow)
