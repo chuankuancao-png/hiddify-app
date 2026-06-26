@@ -194,6 +194,8 @@ func (h *HiddifyInstance) AllProxiesInfoStream(stream grpc.ServerStreamingServer
 		// timer2 := time.NewTicker(10 * time.Second)
 		// defer timer2.Stop()
 		debounceWindow := 1000 * time.Millisecond
+		ticker := time.NewTicker(3 * time.Second)
+		defer ticker.Stop()
 		var (
 			timer   *time.Timer
 			timerCh <-chan time.Time
@@ -209,6 +211,10 @@ func (h *HiddifyInstance) AllProxiesInfoStream(stream grpc.ServerStreamingServer
 				return nil
 			case <-ctx.Done():
 				return nil
+			case <-ticker.C:
+				if err := stream.Send(h.GetAllProxiesInfo(monitor.OutboundsHistory(""), onlyMain)); err != nil {
+					Log(LogLevel_ERROR, LogType_CORE, "failed to send outbounds info: ", err)
+				}
 			case _, ok := <-urltestch:
 				if !ok {
 					return nil
