@@ -714,6 +714,28 @@ func setRoutingOptions(options *option.Options, hopt *HiddifyOptions) error {
 				Type:           C.RuleTypeDefault,
 				DefaultOptions: routeRule,
 			})
+
+			// 为直连域名同步添加 DNS 规则，确保 DNS 查询也走 direct DNS，
+			// 避免域名被 remote DNS（代理方向）解析，导致 DNS 泄漏或 ipin.io 类检测网站显示代理 IP。
+			if rule.Outbound == Outbound_direct &&
+				(len(routeRule.Domain) > 0 || len(routeRule.DomainSuffix) > 0) {
+				dnsRules = append(dnsRules, option.DefaultDNSRule{
+					RawDefaultDNSRule: option.RawDefaultDNSRule{
+						Domain:       routeRule.Domain,
+						DomainSuffix: routeRule.DomainSuffix,
+					},
+					DNSRuleAction: option.DNSRuleAction{
+						Action: C.RuleActionTypeRoute,
+						RouteOptions: option.DNSRouteActionOptions{
+							Server:         DNSMultiDirectTag,
+							Strategy:       hopt.DirectDnsDomainStrategy,
+							RewriteTTL:     &DEFAULT_DNS_TTL,
+							DisableCache:   false,
+							BypassIfFailed: false,
+						},
+					},
+				})
+			}
 		}
 	}
 	forceDirectRoute := make([]string, 0)
