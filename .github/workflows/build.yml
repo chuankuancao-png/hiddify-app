@@ -171,7 +171,13 @@ jobs:
       - name: install_cronet
         if: startsWith(matrix.job.target,'linux')
         run: |
-          make cronet-${{ matrix.job.arch }}
+          for attempt in 1 2 3; do
+            make cronet-${{ matrix.job.arch }} && break
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 60))
+          done
 
       - name: Build
         run: |
@@ -332,11 +338,17 @@ jobs:
         run: |
           set -xeuo pipefail
           cd ~/cronet-go
-          if [[ "${{ matrix.variant }}" == "musl" ]]; then
-            go run ./cmd/build-naive --target=linux/${{ matrix.arch }} --libc=musl download-toolchain
-          else
-            go run ./cmd/build-naive --target=linux/${{ matrix.arch }} download-toolchain
-          fi
+          for attempt in 1 2 3; do
+            if [[ "${{ matrix.variant }}" == "musl" ]]; then
+              go run ./cmd/build-naive --target=linux/${{ matrix.arch }} --libc=musl download-toolchain && break
+            else
+              go run ./cmd/build-naive --target=linux/${{ matrix.arch }} download-toolchain && break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 60))
+          done
       - name: Set Chromium toolchain environment
         if: matrix.naive
         run: |
@@ -747,4 +759,3 @@ jobs:
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ env.LATEST }}
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ inputs.tag-name  }}
-
