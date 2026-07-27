@@ -102,6 +102,7 @@ func StartService(ctx context.Context, in *StartRequest) (coreResponse *CoreInfo
 	if err != nil {
 		return errorWrapper(MessageType_ERROR_BUILDING_CONFIG, err)
 	}
+	applyTrafficRateLimit()
 	saveLastStartRequest(in)
 
 	Log(LogLevel_DEBUG, LogType_CORE, "Main Service pre start")

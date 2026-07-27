@@ -108,6 +108,7 @@ func ChangeHiddifySettings(in *ChangeHiddifySettingsRequest, insert bool) (*Core
 	}()
 
 	if in.HiddifySettingsJson == "" {
+		applyTrafficRateLimit()
 		return &CoreInfoResponse{}, nil
 	}
 	if insert {
@@ -135,6 +136,7 @@ func ChangeHiddifySettings(in *ChangeHiddifySettingsRequest, insert bool) (*Core
 			return nil, err
 		}
 	}
+	applyTrafficRateLimit()
 	return &CoreInfoResponse{}, nil
 }
 

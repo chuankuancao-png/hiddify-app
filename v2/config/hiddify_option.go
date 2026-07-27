@@ -23,12 +23,13 @@ type HiddifyOptions struct {
 	BalancerStrategy        string `json:"balancer-strategy,omitempty" overridable:"true"`
 	// GeoIPPath        string      `json:"geoip-path"`
 	// GeoSitePath      string      `json:"geosite-path"`
-	Rules     []Rule      `json:"rules,omitempty" overridable:"true"`
-	Warp      WarpOptions `json:"warp,omitempty"`
-	Warp2     WarpOptions `json:"warp2,omitempty"`
-	Mux       MuxOptions  `json:"mux,omitempty" overridable:"true"`
-	TLSTricks TLSTricks   `json:"tls-tricks,omitempty"`
-	EnableNTP bool        `json:"enable-ntp,omitempty"`
+	Rules     []Rule           `json:"rules,omitempty" overridable:"true"`
+	Warp      WarpOptions      `json:"warp,omitempty"`
+	Warp2     WarpOptions      `json:"warp2,omitempty"`
+	Mux       MuxOptions       `json:"mux,omitempty" overridable:"true"`
+	TLSTricks TLSTricks        `json:"tls-tricks,omitempty"`
+	RateLimit RateLimitOptions `json:"rate-limit,omitempty"`
+	EnableNTP bool             `json:"enable-ntp,omitempty"`
 
 	DNSOptions
 	InboundOptions
@@ -88,6 +89,11 @@ type MuxOptions struct {
 	Padding    bool   `json:"padding,omitempty" overridable:"true"`
 	MaxStreams int    `json:"max-streams,omitempty" overridable:"true"`
 	Protocol   string `json:"protocol,omitempty" overridable:"true"`
+}
+
+type RateLimitOptions struct {
+	UploadMbps   int `json:"upload-mbps,omitempty"`
+	DownloadMbps int `json:"download-mbps,omitempty"`
 }
 
 type WarpOptions struct {
