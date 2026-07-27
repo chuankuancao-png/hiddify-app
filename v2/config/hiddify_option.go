@@ -92,8 +92,8 @@ type MuxOptions struct {
 }
 
 type RateLimitOptions struct {
-	UploadMbps   int `json:"upload-mbps,omitempty"`
-	DownloadMbps int `json:"download-mbps,omitempty"`
+	UploadMbps   float64 `json:"upload-mbps,omitempty"`
+	DownloadMbps float64 `json:"download-mbps,omitempty"`
 }
 
 type WarpOptions struct {
